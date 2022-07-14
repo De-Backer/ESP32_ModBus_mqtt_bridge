@@ -1,0 +1,44 @@
+menu "App Configuration"
+
+    config BROKER_URL
+        string "Broker URL"
+        default "mqtt://mqtt.eclipseprojects.io"
+        help
+            URL of the broker to connect to
+
+    config SLAVE_IP_ADDRESS
+        string "slave ip address"
+        default  "192.168.0.208"
+        help
+            IP of the MODBUS SLAVE to connect to
+
+    config MQTT_RQUEST_READ
+        string "slave read request mqtt"
+        default  "request/read"
+        help
+            slave read request mqtt
+
+    config MQTT_RQUEST_WRITE
+        string "slave write request mqtt"
+        default  "request/write"
+        help
+            slave write request mqtt
+
+    config MQTT_RESPONSE_READ
+        string "slave read response mqtt"
+        default  "response/read"
+        help
+            slave read response mqtt
+
+    config MQTT_RESPONSE_WRITE
+        string "slave write response mqtt"
+        default  "response/write"
+        help
+            slave write response mqtt
+
+    config MQTT_STATUS
+        string "status mqtt"
+        default  "status"
+        help
+            status mqtt of ESP32
+endmenu

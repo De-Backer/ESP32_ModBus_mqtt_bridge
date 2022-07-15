@@ -19,3 +19,21 @@ We use mqtt for the modbus-flex-getter and modbus-flex-write.
 ```
 ## Status of project
 In the test phase.
+
+## To build
+At Visual Studio Code, SDK Configuration editor of ESP-IDF SDK mod:
+
+App Configuration
+- Broker URL
+- slave ip address
+- slave read request mqtt
+- slave write request mqtt
+- slave read response mqtt
+- slave write response mqtt
+- status mqtt
+Example Connection Configuration
+- WiFi SSID
+- WiFi Password
+- WiFi Scan auth mode threshold
+Modbus configuration
+- Modbus TCP port number

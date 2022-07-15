@@ -31,9 +31,11 @@ App Configuration
 - slave read response mqtt
 - slave write response mqtt
 - status mqtt
+
 Example Connection Configuration
 - WiFi SSID
 - WiFi Password
 - WiFi Scan auth mode threshold
+
 Modbus configuration
 - Modbus TCP port number

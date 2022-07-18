@@ -19,6 +19,15 @@ We use mqtt for the modbus-flex-getter and modbus-flex-write.
 ```
 ## Status of project
 In the test phase.
+## works:
+ - [ ] FC 1: Read Coil Status
+ - [ ] FC 2: Read Input Status
+ - [ ] FC 3: Read Holding Registers
+ - [x] FC 4: Read Input Registers
+ - [ ] FC 5: Force Single Coil
+ - [ ] FC 6: Preset Single Register (bug in response (if(fc==4) => if(fc<5) todo)
+ - [ ] FC 15: Force Multiple Coils
+ - [X] FC 16: Preset Multiple Registers
 
 ## To build
 At Visual Studio Code, SDK Configuration editor of ESP-IDF SDK mod:

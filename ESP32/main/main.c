@@ -44,6 +44,9 @@
 static const char *TAG = "Main";
 
 #define MB_TCP_PORT                     (CONFIG_FMB_TCP_PORT_DEFAULT)   // TCP port used for modbus slave
+#define MB_PORT_NUM     (CONFIG_MB_UART_PORT_NUM)   // Number of UART port used for Modbus connection
+#define MB_DEV_SPEED    (CONFIG_MB_UART_BAUD_RATE)  // The communication speed of the UART
+
 
 // The macro to get offset for parameter in the appropriate structure
 #define INPUT_OFFSET(field) ((uint16_t)(offsetof(input_reg_params_t, field) + 1))
@@ -302,15 +305,30 @@ void app_main(void)
     }
 
     mb_communication_info_t comm_info = {};
+#if CONFIG_MB_COMM_MODE_TCP
     comm_info.ip_port = MB_TCP_PORT;
     comm_info.ip_addr_type = MB_IPV4;
     comm_info.ip_mode = MB_MODE_TCP;
     comm_info.ip_addr = (void*)slave_ip_address_table;
     comm_info.ip_netif_ptr = (void*)get_example_netif();
+#else
+    comm_info.port= MB_PORT_NUM;
+#if CONFIG_MB_COMM_MODE_ASCII
+    comm_info.mode = MB_MODE_ASCII;
+#elif CONFIG_MB_COMM_MODE_RTU
+    comm_info.mode = MB_MODE_RTU;
+#endif
+    comm_info.baudrate = MB_DEV_SPEED;
+    comm_info.parity = MB_PARITY_NONE;
+#endif
 
     void* master_handler = NULL;
 
+#if CONFIG_MB_COMM_MODE_TCP
     result = mbc_master_init_tcp(&master_handler);
+#else
+    result = mbc_master_init(MB_PORT_SERIAL_MASTER,&master_handler);
+#endif
     if(master_handler == NULL){
         ESP_LOGE(TAG,"mb controller initialization fail.");
     }
@@ -322,18 +340,38 @@ void app_main(void)
     if(result != ESP_OK){
         ESP_LOGE(TAG,"mb controller setup fail, returns(0x%x).",(uint32_t)result);
     }
+#if CONFIG_MB_COMM_MODE_TCP
     ESP_LOGI(TAG, "Modbus master mbc_master_setup pord = %i",comm_info.ip_port);
+#else
+    // Set UART pin numbers
+    result = uart_set_pin(MB_PORT_NUM, CONFIG_MB_UART_TXD, CONFIG_MB_UART_RXD,
+                              CONFIG_MB_UART_RTS, UART_PIN_NO_CHANGE);
+    if(result != ESP_OK){
+        ESP_LOGE(TAG,"mb serial set pin failure, uart_set_pin() returned (0x%x).",(uint32_t)result);
+    }
+#endif
+
+
+    result = mbc_master_start();
+    if(result != ESP_OK){
+        ESP_LOGE(TAG,"mb controller start fail, returns(0x%x).",(uint32_t)result);
+    }
+
+#if CONFIG_MB_COMM_MODE_TCP
+#else
+    // Set driver mode to Half Duplex
+    result = uart_set_mode(MB_PORT_NUM, UART_MODE_RS485_HALF_DUPLEX);
+    if(result != ESP_OK){
+        ESP_LOGE(TAG,"mb serial set mode failure, uart_set_mode() returned (0x%x).",(uint32_t)result);
+    }
+    vTaskDelay(5);
+#endif
 
     result = mbc_master_set_descriptor(&device_parameters[0], num_device_parameters);
     if(result != ESP_OK){
         ESP_LOGE(TAG,"mb controller set descriptor fail, returns(0x%x).",(uint32_t)result);
     }
     ESP_LOGI(TAG, "Modbus master stack initialized...");
-
-    result = mbc_master_start();
-    if(result != ESP_OK){
-        ESP_LOGE(TAG,"mb controller start fail, returns(0x%x).",(uint32_t)result);
-    }
 
     vTaskDelay(50);
 

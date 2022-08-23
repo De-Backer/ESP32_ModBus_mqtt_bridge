@@ -137,7 +137,7 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
       * reg length
     */
 
-    if (fc==6){
+    if (fc==6){// ||fc==2 // te testen
         int16_t var=value[0];
         err = mbc_master_send_request(&setparam, &var);
         value[0]=var;
@@ -190,7 +190,7 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
                 msg_id = esp_mqtt_client_publish(event->client, CONFIG_MQTT_RESPONSE_WRITE, json_string, strlen(json_string), 0,0);
             }
             esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "-handle---", 0,0,0);
-            // printf("json_string send(%i):\n%s\n",strlen(json_string), json_string);
+            printf("json_string send(%i):\n%s\n",strlen(json_string), json_string);
             ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
             cJSON_free(json_string);
         }

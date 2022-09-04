@@ -76,7 +76,8 @@ menu "App Configuration"
     config MB_UART_RTS
         int "UART RTS pin number"
         range 0 48
-        default 8 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32S3
+        default 4 if IDF_TARGET_ESP32
+        default 8 if IDF_TARGET_ESP32S3
         default 10 if !IDF_TARGET_ESP32
         depends on MB_COMM_MODE_ASCII || MB_COMM_MODE_RTU
         help

@@ -308,6 +308,7 @@ void app_main(void)
     if(result != ESP_OK){
         ESP_LOGE(TAG,"example_connect fail, returns(0x%x).",(uint32_t)result);
     }
+        ESP_LOGI(TAG,"example_connect ok, returns(0x%x).",(uint32_t)result);
 
     mb_communication_info_t comm_info = {};
 #if CONFIG_MB_COMM_MODE_TCP
@@ -332,6 +333,7 @@ void app_main(void)
 #if CONFIG_MB_COMM_MODE_TCP
     result = mbc_master_init_tcp(&master_handler);
 #else
+        ESP_LOGI(TAG,"mbc_master_init");
     result = mbc_master_init(MB_PORT_SERIAL_MASTER,&master_handler);
 #endif
     if(master_handler == NULL){
@@ -341,6 +343,7 @@ void app_main(void)
         ESP_LOGE(TAG,"mb controller initialization fail, returns(0x%x).",(uint32_t)result);
     }
 
+        ESP_LOGI(TAG,"mbc_master_setup");
     result = mbc_master_setup((void*)&comm_info);
     if(result != ESP_OK){
         ESP_LOGE(TAG,"mb controller setup fail, returns(0x%x).",(uint32_t)result);
@@ -348,6 +351,7 @@ void app_main(void)
 #if CONFIG_MB_COMM_MODE_TCP
     ESP_LOGI(TAG, "Modbus master mbc_master_setup pord = %i",comm_info.ip_port);
 #else
+        ESP_LOGI(TAG,"Set UART pin numbers");
     // Set UART pin numbers
     result = uart_set_pin(MB_PORT_NUM, CONFIG_MB_UART_TXD, CONFIG_MB_UART_RXD,
                               CONFIG_MB_UART_RTS, UART_PIN_NO_CHANGE);
@@ -359,6 +363,7 @@ void app_main(void)
 #endif
 
 
+        ESP_LOGI(TAG,"mbc_master_start");
     result = mbc_master_start();
     if(result != ESP_OK){
         ESP_LOGE(TAG,"mb controller start fail, returns(0x%x).",(uint32_t)result);

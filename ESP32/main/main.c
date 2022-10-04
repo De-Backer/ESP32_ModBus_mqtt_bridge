@@ -184,7 +184,7 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
         if (json_string)
         {
             int msg_id =0;
-            if (fc==4){
+            if (fc<5){
                 msg_id = esp_mqtt_client_publish(event->client, CONFIG_MQTT_RESPONSE_READ, json_string, strlen(json_string), 0,0);
             }else {
                 msg_id = esp_mqtt_client_publish(event->client, CONFIG_MQTT_RESPONSE_WRITE, json_string, strlen(json_string), 0,0);

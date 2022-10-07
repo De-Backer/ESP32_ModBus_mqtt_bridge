@@ -22,10 +22,10 @@ In the test phase.
 ## works:
  - [ ] FC 1: Read Coil Status
  - [ ] FC 2: Read Input Status
- - [ ] FC 3: Read Holding Registers
+ - [X] FC 3: Read Holding Registers
  - [x] FC 4: Read Input Registers
  - [ ] FC 5: Force Single Coil
- - [ ] FC 6: Preset Single Register (bug in response (if(fc==4) => if(fc<5) todo)
+ - [x] FC 6: Preset Single Register (bug in response
  - [ ] FC 15: Force Multiple Coils
  - [X] FC 16: Preset Multiple Registers
 
@@ -47,4 +47,12 @@ Example Connection Configuration
 - WiFi Scan auth mode threshold
 
 Modbus configuration
+- Modbus RTU/ASCII/TCP
+Modbus RTU/ASCII
+- UART port number
+- UART RXD pin number
+- UART TXD pin number
+- UART RTS pin number
+- UART communication speed
+Modbus TCP
 - Modbus TCP port number

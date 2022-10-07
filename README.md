@@ -25,7 +25,7 @@ In the test phase.
  - [X] FC 3: Read Holding Registers
  - [x] FC 4: Read Input Registers
  - [ ] FC 5: Force Single Coil
- - [x] FC 6: Preset Single Register (bug in response
+ - [x] FC 6: Preset Single Register
  - [ ] FC 15: Force Multiple Coils
  - [X] FC 16: Preset Multiple Registers
 
@@ -48,11 +48,13 @@ Example Connection Configuration
 
 Modbus configuration
 - Modbus RTU/ASCII/TCP
+
 Modbus RTU/ASCII
 - UART port number
 - UART RXD pin number
 - UART TXD pin number
 - UART RTS pin number
 - UART communication speed
+
 Modbus TCP
 - Modbus TCP port number

@@ -106,20 +106,13 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
     const cJSON *quantity_J = NULL;quantity_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"quantity");
     quantity =(int)cJSON_GetNumberValue(quantity_J);
 
-    int16_t value[quantity+1];  //Value to set or Variable for Output
-    const cJSON *value_J = NULL;value_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"value");
-    for (size_t i = 0; i < quantity; i++) {
-        value[i]=0;
-        if(cJSON_IsArray(value_J)){
-            cJSON *valu_J = NULL;valu_J=cJSON_GetArrayItem(value_J,i);
-            value[i]=(int16_t)cJSON_GetNumberValue(valu_J);
-        }
-        }
-
     const cJSON *topic_J = NULL;topic_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"topic");
     topic =strdup(topic_J->valuestring);
 
-    cJSON_Delete(mqtt_request);
+    
+    int16_t value[quantity+1];  //Value to set or Variable for Output
+    const cJSON *value_J = NULL;value_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"value");
+
 
      printf("topic   ='%s'\r\n",topic); // topic
      printf("fc      =%i\r\n", fc); // fc (mb_param_type Modbus Register Type)
@@ -137,13 +130,28 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
       * reg length
     */
 
-    if (fc==6){// ||fc==2 // te testen
-        int16_t var=value[0];
+    if(cJSON_IsArray(value_J)){
+        for (size_t i = 0; i < quantity; i++) {
+            value[i]=0;
+            cJSON *valu_J = NULL;valu_J=cJSON_GetArrayItem(value_J,i);
+            value[i]=(int16_t)cJSON_GetNumberValue(valu_J);
+            printf("in  %i ='%i'\r\n",i,value[i]);
+        }
+        err = mbc_master_send_request(&setparam, value);
+    } else if(cJSON_IsNumber(value_J)){
+        value[0]=0;
+        int16_t var=(int16_t)cJSON_GetNumberValue(value_J);
         err = mbc_master_send_request(&setparam, &var);
         value[0]=var;
+
     } else {
+        for (size_t i = 0; i < quantity; i++) {
+            value[i]=0;
+        }
         err = mbc_master_send_request(&setparam, value);
     }
+
+    cJSON_Delete(mqtt_request);
 
     if(err==ESP_OK) {
         esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "--handle--", 0,0,0);

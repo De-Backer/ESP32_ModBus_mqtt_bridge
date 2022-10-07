@@ -44,6 +44,9 @@
 static const char *TAG = "Main";
 
 #define MB_TCP_PORT                     (CONFIG_FMB_TCP_PORT_DEFAULT)   // TCP port used for modbus slave
+#define MB_PORT_NUM     (CONFIG_MB_UART_PORT_NUM)   // Number of UART port used for Modbus connection
+#define MB_DEV_SPEED    (CONFIG_MB_UART_BAUD_RATE)  // The communication speed of the UART
+
 
 // The macro to get offset for parameter in the appropriate structure
 #define INPUT_OFFSET(field) ((uint16_t)(offsetof(input_reg_params_t, field) + 1))
@@ -68,6 +71,7 @@ const mb_parameter_descriptor_t device_parameters[] = {
 // Calculate number of parameters in the table
 const uint16_t num_device_parameters = (sizeof(device_parameters) / sizeof(device_parameters[0]));
 
+#if CONFIG_MB_COMM_MODE_TCP
 // This table represents slave IP addresses that correspond to the short address field of the slave in device_parameters structure
 // Modbus TCP stack shall use these addresses to be able to connect and read parameters from slave
 char* slave_ip_address_table[] = {
@@ -76,6 +80,7 @@ char* slave_ip_address_table[] = {
 };
 
 const size_t ip_table_sz = (size_t)(sizeof(slave_ip_address_table) / sizeof(slave_ip_address_table[0]));
+#endif
 
 static void log_error_if_nonzero(const char *message, int error_code)
 {
@@ -87,41 +92,37 @@ static void log_error_if_nonzero(const char *message, int error_code)
 static void mqtt_to_json(esp_mqtt_event_handle_t event)
 {
     esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS, "----handle", 0,0,0);
-    int16_t fc, address, quantity;
+    int16_t fc,unitid, address, quantity;
     char *topic = NULL;
 
     cJSON *mqtt_request;
     mqtt_request = cJSON_ParseWithLength(event->data,event->data_len);
     const cJSON *fc_J = NULL;fc_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"fc");
     fc =(int)cJSON_GetNumberValue(fc_J);
+    const cJSON *unitid_J = NULL;unitid_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"unitid");
+    unitid =(int)cJSON_GetNumberValue(unitid_J);
     const cJSON *address_J = NULL;address_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"address");
     address =(int)cJSON_GetNumberValue(address_J);
     const cJSON *quantity_J = NULL;quantity_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"quantity");
     quantity =(int)cJSON_GetNumberValue(quantity_J);
 
-    int16_t value[quantity+1];  //Value to set or Variable for Output
-    const cJSON *value_J = NULL;value_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"value");
-    for (size_t i = 0; i < quantity; i++) {
-        value[i]=0;
-        if(cJSON_IsArray(value_J)){
-            cJSON *valu_J = NULL;valu_J=cJSON_GetArrayItem(value_J,i);
-            value[i]=(int16_t)cJSON_GetNumberValue(valu_J);
-        }
-        }
-
     const cJSON *topic_J = NULL;topic_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"topic");
     topic =strdup(topic_J->valuestring);
 
-    cJSON_Delete(mqtt_request);
+    
+    int16_t value[quantity+1];  //Value to set or Variable for Output
+    const cJSON *value_J = NULL;value_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"value");
 
-    // printf("topic   ='%s'\r\n",topic); // topic
-    // printf("fc      =%i\r\n", fc); // fc (mb_param_type Modbus Register Type)
-    // printf("address =%i\r\n", address);/*!< This is the Modbus register address. This is the 0 based value. */
-    // printf("quantity=%i\r\n", quantity);/*!< Size of mb parameter in registers */
+
+     printf("topic   ='%s'\r\n",topic); // topic
+     printf("fc      =%i\r\n", fc); // fc (mb_param_type Modbus Register Type)
+     printf("unitid  =%i\r\n", unitid); // unitid (mb_param_type Modbus addres)
+     printf("address =%i\r\n", address);/*!< This is the Modbus register address. This is the 0 based value. */
+     printf("quantity=%i\r\n", quantity);/*!< Size of mb parameter in registers */
 
     esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "---handle-", 0,0,0);
     esp_err_t err = ESP_OK;
-    mb_param_request_t setparam = {0, fc, address, quantity};
+    mb_param_request_t setparam = {unitid, fc, address, quantity};
      /*
       * Device Adress,
       * Func code (3 Read Holding Reg, 6 Write Input Reg),  (de fc in node red)
@@ -129,13 +130,28 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
       * reg length
     */
 
-    if (fc==6){
-        int16_t var=value[0];
+    if(cJSON_IsArray(value_J)){
+        for (size_t i = 0; i < quantity; i++) {
+            value[i]=0;
+            cJSON *valu_J = NULL;valu_J=cJSON_GetArrayItem(value_J,i);
+            value[i]=(int16_t)cJSON_GetNumberValue(valu_J);
+            printf("in  %i ='%i'\r\n",i,value[i]);
+        }
+        err = mbc_master_send_request(&setparam, value);
+    } else if(cJSON_IsNumber(value_J)){
+        value[0]=0;
+        int16_t var=(int16_t)cJSON_GetNumberValue(value_J);
         err = mbc_master_send_request(&setparam, &var);
         value[0]=var;
+
     } else {
+        for (size_t i = 0; i < quantity; i++) {
+            value[i]=0;
+        }
         err = mbc_master_send_request(&setparam, value);
     }
+
+    cJSON_Delete(mqtt_request);
 
     if(err==ESP_OK) {
         esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "--handle--", 0,0,0);
@@ -176,13 +192,13 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
         if (json_string)
         {
             int msg_id =0;
-            if (fc==4){
+            if (fc<5){
                 msg_id = esp_mqtt_client_publish(event->client, CONFIG_MQTT_RESPONSE_READ, json_string, strlen(json_string), 0,0);
             }else {
                 msg_id = esp_mqtt_client_publish(event->client, CONFIG_MQTT_RESPONSE_WRITE, json_string, strlen(json_string), 0,0);
             }
             esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "-handle---", 0,0,0);
-            // printf("json_string send(%i):\n%s\n",strlen(json_string), json_string);
+            printf("json_string send(%i):\n%s\n",strlen(json_string), json_string);
             ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
             cJSON_free(json_string);
         }
@@ -300,17 +316,34 @@ void app_main(void)
     if(result != ESP_OK){
         ESP_LOGE(TAG,"example_connect fail, returns(0x%x).",(uint32_t)result);
     }
+        ESP_LOGI(TAG,"example_connect ok, returns(0x%x).",(uint32_t)result);
 
     mb_communication_info_t comm_info = {};
+#if CONFIG_MB_COMM_MODE_TCP
     comm_info.ip_port = MB_TCP_PORT;
     comm_info.ip_addr_type = MB_IPV4;
     comm_info.ip_mode = MB_MODE_TCP;
     comm_info.ip_addr = (void*)slave_ip_address_table;
     comm_info.ip_netif_ptr = (void*)get_example_netif();
+#else
+    comm_info.port= MB_PORT_NUM;
+#if CONFIG_MB_COMM_MODE_ASCII
+    comm_info.mode = MB_MODE_ASCII;
+#elif CONFIG_MB_COMM_MODE_RTU
+    comm_info.mode = MB_MODE_RTU;
+#endif
+    comm_info.baudrate = MB_DEV_SPEED;
+    comm_info.parity = MB_PARITY_NONE;
+#endif
 
     void* master_handler = NULL;
 
+#if CONFIG_MB_COMM_MODE_TCP
     result = mbc_master_init_tcp(&master_handler);
+#else
+        ESP_LOGI(TAG,"mbc_master_init");
+    result = mbc_master_init(MB_PORT_SERIAL_MASTER,&master_handler);
+#endif
     if(master_handler == NULL){
         ESP_LOGE(TAG,"mb controller initialization fail.");
     }
@@ -318,22 +351,47 @@ void app_main(void)
         ESP_LOGE(TAG,"mb controller initialization fail, returns(0x%x).",(uint32_t)result);
     }
 
+        ESP_LOGI(TAG,"mbc_master_setup");
     result = mbc_master_setup((void*)&comm_info);
     if(result != ESP_OK){
         ESP_LOGE(TAG,"mb controller setup fail, returns(0x%x).",(uint32_t)result);
     }
+#if CONFIG_MB_COMM_MODE_TCP
     ESP_LOGI(TAG, "Modbus master mbc_master_setup pord = %i",comm_info.ip_port);
+#else
+        ESP_LOGI(TAG,"Set UART pin numbers");
+    // Set UART pin numbers
+    result = uart_set_pin(MB_PORT_NUM, CONFIG_MB_UART_TXD, CONFIG_MB_UART_RXD,
+                              CONFIG_MB_UART_RTS, UART_PIN_NO_CHANGE);
+        ESP_LOGI(TAG,"mb controller setup TXDpin %x RXDpin %x RTSpin %x pinCHANGE %x",
+        CONFIG_MB_UART_TXD,CONFIG_MB_UART_RXD,CONFIG_MB_UART_RTS,UART_PIN_NO_CHANGE);
+    if(result != ESP_OK){
+        ESP_LOGE(TAG,"mb serial set pin failure, uart_set_pin() returned (0x%x).",(uint32_t)result);
+    }
+#endif
+
+
+        ESP_LOGI(TAG,"mbc_master_start");
+    result = mbc_master_start();
+    if(result != ESP_OK){
+        ESP_LOGE(TAG,"mb controller start fail, returns(0x%x).",(uint32_t)result);
+    }
+
+#if CONFIG_MB_COMM_MODE_TCP
+#else
+    // Set driver mode to Half Duplex
+    result = uart_set_mode(MB_PORT_NUM, UART_MODE_RS485_HALF_DUPLEX);
+    if(result != ESP_OK){
+        ESP_LOGE(TAG,"mb serial set mode failure, uart_set_mode() returned (0x%x).",(uint32_t)result);
+    }
+    vTaskDelay(5);
+#endif
 
     result = mbc_master_set_descriptor(&device_parameters[0], num_device_parameters);
     if(result != ESP_OK){
         ESP_LOGE(TAG,"mb controller set descriptor fail, returns(0x%x).",(uint32_t)result);
     }
     ESP_LOGI(TAG, "Modbus master stack initialized...");
-
-    result = mbc_master_start();
-    if(result != ESP_OK){
-        ESP_LOGE(TAG,"mb controller start fail, returns(0x%x).",(uint32_t)result);
-    }
 
     vTaskDelay(50);
 
@@ -366,12 +424,14 @@ void app_main(void)
     ESP_LOGI(TAG, "Modbus master stack destroy...");
 
     result = ESP_OK;
+#if CONFIG_MB_COMM_MODE_TCP
     for (int i = 0; ((i < ip_table_sz) && slave_ip_address_table[i] != NULL); i++) {
         if (slave_ip_address_table[i]) {
             free(slave_ip_address_table[i]);
             slave_ip_address_table[i] = "FROM_STDIN";
         }
     }
+#endif
 
     result = example_disconnect();
     if(result != ESP_OK){

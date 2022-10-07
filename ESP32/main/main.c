@@ -92,7 +92,7 @@ static void log_error_if_nonzero(const char *message, int error_code)
 static void mqtt_to_json(esp_mqtt_event_handle_t event)
 {
     esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS, "----handle", 0,0,0);
-    int16_t fc,unitid, address, quantity;
+    uint16_t fc,unitid, address, quantity;
     char *topic = NULL;
 
     cJSON *mqtt_request;
@@ -110,7 +110,7 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
     topic =strdup(topic_J->valuestring);
 
     
-    int16_t value[quantity+1];  //Value to set or Variable for Output
+    uint16_t value[quantity+1];  //Value to set or Variable for Output
     const cJSON *value_J = NULL;value_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"value");
 
 
@@ -134,13 +134,13 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
         for (size_t i = 0; i < quantity; i++) {
             value[i]=0;
             cJSON *valu_J = NULL;valu_J=cJSON_GetArrayItem(value_J,i);
-            value[i]=(int16_t)cJSON_GetNumberValue(valu_J);
+            value[i]=(uint16_t)cJSON_GetNumberValue(valu_J);
             printf("in  %i ='%i'\r\n",i,value[i]);
         }
         err = mbc_master_send_request(&setparam, value);
     } else if(cJSON_IsNumber(value_J)){
         value[0]=0;
-        int16_t var=(int16_t)cJSON_GetNumberValue(value_J);
+        uint16_t var=(uint16_t)cJSON_GetNumberValue(value_J);
         err = mbc_master_send_request(&setparam, &var);
         value[0]=var;
 

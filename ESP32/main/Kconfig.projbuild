@@ -86,29 +86,17 @@ menu "App Configuration"
             See UART documentation for more information about available pin
             numbers for UART.
 
-    config MQTT_RQUEST_READ
-        string "slave read request mqtt"
-        default  "request/read"
+    config MQTT_RQUEST
+        string "slave read/write request mqtt"
+        default  "request"
         help
-            slave read request mqtt
+            slave read/write request mqtt
 
-    config MQTT_RQUEST_WRITE
-        string "slave write request mqtt"
-        default  "request/write"
+    config MQTT_RESPONSE
+        string "slave read/write response mqtt"
+        default  "response"
         help
-            slave write request mqtt
-
-    config MQTT_RESPONSE_READ
-        string "slave read response mqtt"
-        default  "response/read"
-        help
-            slave read response mqtt
-
-    config MQTT_RESPONSE_WRITE
-        string "slave write response mqtt"
-        default  "response/write"
-        help
-            slave write response mqtt
+            slave read/write response mqtt
 
     config MQTT_STATUS
         string "status mqtt"

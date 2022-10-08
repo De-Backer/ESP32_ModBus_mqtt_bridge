@@ -1,0 +1,211 @@
+[
+    {
+        "id": "fc975f8536561d74",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "bb04bee06d394ced",
+        "type": "mqtt in",
+        "z": "fc975f8536561d74",
+        "name": "",
+        "topic": "response",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "27a79b282a8bab25",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 720,
+        "y": 580,
+        "wires": [
+            [
+                "1d573b2b1ee6688f",
+                "dd74585b73598bb5"
+            ]
+        ]
+    },
+    {
+        "id": "1d573b2b1ee6688f",
+        "type": "function",
+        "z": "fc975f8536561d74",
+        "name": "from payload read",
+        "func": "if (msg.payload.modbusRequest.fc>4) return;\n\nvar rawData = new ArrayBuffer(4);\nvar int8View = new Uint8Array(rawData);\nvar intView = new Uint16Array(rawData);\nvar fltView = new Float32Array(rawData);\n\nvar buffer = [];\nvar floatdata = [];\nfor(let at_p=0;at_p< (msg.payload.data.length-2);at_p+=2){\n\tintView[0] = msg.payload.data[at_p+1];\n\tintView[1] = msg.payload.data[at_p];\n\tfloatdata.push(fltView[0]);\n\tbuffer.push(int8View[0]);\n\tbuffer.push(int8View[1]);\n\tbuffer.push(int8View[2]);\n\tbuffer.push(int8View[3]);\n}\n\nvar newMsg = { \n    topic:msg.payload.topic,\n    payload: {\n        data:msg.payload.data,\n        buffer:buffer,\n        floatdata:floatdata\n    },\n    modbusRequest:msg.payload.modbusRequest,\n    values:msg.payload.data};\nreturn newMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b609b318c7eaf382",
+        "type": "mqtt out",
+        "z": "fc975f8536561d74",
+        "name": "",
+        "topic": "request",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "application/json",
+        "userProps": "",
+        "correl": "",
+        "expiry": "10",
+        "broker": "27a79b282a8bab25",
+        "x": 720,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "bab8bd4386fa136f",
+        "type": "function",
+        "z": "fc975f8536561d74",
+        "name": "add to payload read",
+        "func": "if (msg.payload.fc > 0 \n    && msg.payload.fc < 5) {\n    var topic = \"\";\n    topic = msg.topic;\n    msg.payload.topic = topic;\n    return msg;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 500,
+        "wires": [
+            [
+                "b609b318c7eaf382"
+            ]
+        ]
+    },
+    {
+        "id": "dd74585b73598bb5",
+        "type": "function",
+        "z": "fc975f8536561d74",
+        "name": "from payload write",
+        "func": "if (msg.payload.modbusRequest.fc < 5) return;\nvar rawData = new ArrayBuffer(4);\nvar int8View = new Uint8Array(rawData);\nvar intView = new Uint16Array(rawData);\nvar fltView = new Float32Array(rawData);\n\nvar buffer = [];\nvar floatdata = [];\nfor(let at_p=0;at_p< (msg.payload.data.length-2);at_p+=2){\n\tintView[0] = msg.payload.data[at_p+1];\n\tintView[1] = msg.payload.data[at_p];\n\tfloatdata.push(fltView[0]);\n\tbuffer.push(int8View[0]);\n\tbuffer.push(int8View[1]);\n\tbuffer.push(int8View[2]);\n\tbuffer.push(int8View[3]);\n}\n\nvar newMsg = { \n    topic:msg.payload.topic,\n    payload: {\n        data:msg.payload.data,\n        buffer:buffer,\n        floatdata:floatdata\n    },\n    modbusRequest:msg.payload.modbusRequest,\n    values:msg.payload.data};\nreturn newMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fb85b37bfaae3bf8",
+        "type": "mqtt in",
+        "z": "fc975f8536561d74",
+        "name": "",
+        "topic": "status",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "27a79b282a8bab25",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 710,
+        "y": 620,
+        "wires": [
+            [
+                "62f2c7d77f03116d"
+            ]
+        ]
+    },
+    {
+        "id": "c54c9e6481408ce5",
+        "type": "function",
+        "z": "fc975f8536561d74",
+        "name": "add to payload write",
+        "func": "if (msg.payload.fc > 4\n    && msg.payload.fc < 17)\n{\n    var topic =\"\";\n    topic = msg.topic;\n    msg.payload.topic=topic;\n    return msg;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 600,
+        "wires": [
+            [
+                "b609b318c7eaf382"
+            ]
+        ]
+    },
+    {
+        "id": "39e786835a392d52",
+        "type": "comment",
+        "z": "fc975f8536561d74",
+        "name": "modbus read",
+        "info": "",
+        "x": 470,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "d6e10725032904ee",
+        "type": "comment",
+        "z": "fc975f8536561d74",
+        "name": "modbus write",
+        "info": "",
+        "x": 470,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "62f2c7d77f03116d",
+        "type": "debug",
+        "z": "fc975f8536561d74",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 890,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "27a79b282a8bab25",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "127.0.0.1",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": "",
+        "credentials": {
+            "user": "",
+            "password": ""
+        }
+    }
+]

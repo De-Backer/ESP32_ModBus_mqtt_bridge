@@ -41,6 +41,9 @@
  * cJSON
 */
 #include "cJSON.h"
+
+#include <string.h>
+
 static const char *TAG = "Main";
 
 #define MB_TCP_PORT                     (CONFIG_FMB_TCP_PORT_DEFAULT)   // TCP port used for modbus slave
@@ -192,11 +195,7 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
         if (json_string)
         {
             int msg_id =0;
-            if (fc<5){
-                msg_id = esp_mqtt_client_publish(event->client, CONFIG_MQTT_RESPONSE_READ, json_string, strlen(json_string), 0,0);
-            }else {
-                msg_id = esp_mqtt_client_publish(event->client, CONFIG_MQTT_RESPONSE_WRITE, json_string, strlen(json_string), 0,0);
-            }
+            msg_id = esp_mqtt_client_publish(event->client, CONFIG_MQTT_RESPONSE, json_string, strlen(json_string), 0,0);
             esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "-handle---", 0,0,0);
             printf("json_string send(%i):\n%s\n",strlen(json_string), json_string);
             ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
@@ -206,6 +205,9 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
 
     } else if (err==ESP_ERR_INVALID_ARG) {
         ESP_LOGE(TAG, "invalid Argument");
+    }else if (err==ESP_ERR_INVALID_RESPONSE) {
+        ESP_LOGE(TAG, "invalid response");
+    esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "invalid response", 0,0,0);
     }
 
     free(topic);
@@ -224,10 +226,7 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
 static void  subscribe_to_broker(esp_mqtt_client_handle_t client){
     int msg_id;
 
-    msg_id = esp_mqtt_client_subscribe(client, CONFIG_MQTT_RQUEST_READ, 0);
-    ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
-
-    msg_id = esp_mqtt_client_subscribe(client, CONFIG_MQTT_RQUEST_WRITE, 0);
+    msg_id = esp_mqtt_client_subscribe(client, CONFIG_MQTT_RQUEST, 0);
     ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
     esp_mqtt_client_publish(client, CONFIG_MQTT_STATUS, "init", 0,0,0);
@@ -271,7 +270,11 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         break;
     case MQTT_EVENT_DATA:
         ESP_LOGI(TAG, "MQTT_EVENT_DATA");
-        mqtt_to_json(event);
+        if(strncmp(CONFIG_MQTT_RQUEST,event->topic,event->topic_len)==0){
+            mqtt_to_json(event);
+        } else {
+            printf("else event topic   ='%s'\r\n",event->topic); // topic
+        }
         break;
     case MQTT_EVENT_ERROR:
         ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
@@ -411,9 +414,7 @@ void app_main(void)
     }
 
     int msg_id;
-    msg_id = esp_mqtt_client_unsubscribe(client, CONFIG_MQTT_RQUEST_READ);
-    ESP_LOGI(TAG, "sent unsubscribe successful, msg_id=%d", msg_id);
-    msg_id = esp_mqtt_client_unsubscribe(client, CONFIG_MQTT_RQUEST_WRITE);
+    msg_id = esp_mqtt_client_unsubscribe(client, CONFIG_MQTT_RQUEST);
     ESP_LOGI(TAG, "sent unsubscribe successful, msg_id=%d", msg_id);
 
 

@@ -1,5 +1,6 @@
 # An ESP32 Modbus Mqtt bridge to node red.
-
+[![platform](https://img.shields.io/badge/platform-Node--RED-red)](https://nodered.org)
+[![platform](https://img.shields.io/badge/platform-ESP--32-blue)](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
 ## Purpose
 To the works like 'modbus-flex-getter' and 'modbus-flex-write' of https://flows.nodered.org/node/node-red-contrib-modbus.
 Which then enables us to read multiple devices over the internet (or local network), without multiple PC's or raspberry pi's.
@@ -14,7 +15,7 @@ We use mqtt for the modbus-flex-getter and modbus-flex-write.
 
 ![Node-red modbus-flex-getter and modbus-flex-write Screenshot](/Node-red/node-red-contrib-modbus.png)
 ![Node-red modbus-flex-getter and modbus-flex-write Screenshot](/Node-red/Screenshot.png)
-[Node-red code](/Node-red/inport.txt)
+[Node-red code](/Node-red/inport.json)
 
 ## Status of project
 In the test phase.

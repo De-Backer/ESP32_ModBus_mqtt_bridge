@@ -14,7 +14,7 @@ We use mqtt for the modbus-flex-getter and modbus-flex-write.
 
 ![Node-red modbus-flex-getter and modbus-flex-write Screenshot](/Node-red/node-red-contrib-modbus.png)
 ![Node-red modbus-flex-getter and modbus-flex-write Screenshot](/Node-red/Screenshot.png)
-![Node-red code](/Node-red/inport.txt)
+[Node-red code](/Node-red/inport.txt)
 
 ## Status of project
 In the test phase.

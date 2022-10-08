@@ -23,9 +23,9 @@ In the test phase.
  - [ ] FC 1: Read Coil Status
  - [ ] FC 2: Read Input Status
  - [X] FC 3: Read Holding Registers
- - [x] FC 4: Read Input Registers
+ - [X] FC 4: Read Input Registers
  - [ ] FC 5: Force Single Coil
- - [x] FC 6: Preset Single Register
+ - [X] FC 6: Preset Single Register
  - [ ] FC 15: Force Multiple Coils
  - [X] FC 16: Preset Multiple Registers
 
@@ -35,10 +35,8 @@ At Visual Studio Code, SDK Configuration editor of ESP-IDF SDK mod:
 App Configuration
 - Broker URL
 - slave ip address
-- slave read request mqtt
-- slave write request mqtt
-- slave read response mqtt
-- slave write response mqtt
+- slave read/write request mqtt
+- slave read/write response mqtt
 - status mqtt
 
 Example Connection Configuration

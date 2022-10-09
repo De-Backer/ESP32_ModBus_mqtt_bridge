@@ -116,13 +116,13 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
     uint16_t value[quantity+1];  //Value to set or Variable for Output
     const cJSON *value_J = NULL;value_J = cJSON_GetObjectItemCaseSensitive(mqtt_request,"value");
 
-
+#if CONFIG_DEBUG_MODE_ON
      printf("topic   ='%s'\r\n",topic); // topic
      printf("fc      =%i\r\n", fc); // fc (mb_param_type Modbus Register Type)
      printf("unitid  =%i\r\n", unitid); // unitid (mb_param_type Modbus addres)
      printf("address =%i\r\n", address);/*!< This is the Modbus register address. This is the 0 based value. */
      printf("quantity=%i\r\n", quantity);/*!< Size of mb parameter in registers */
-
+#endif
     esp_err_t err = ESP_OK;
     mb_param_request_t setparam = {unitid, fc, address, quantity};
      /*
@@ -137,7 +137,9 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
             value[i]=0;
             cJSON *valu_J = NULL;valu_J=cJSON_GetArrayItem(value_J,i);
             value[i]=(uint16_t)cJSON_GetNumberValue(valu_J);
+#if CONFIG_DEBUG_MODE_ON
             printf("in  %i ='%i'\r\n",i,value[i]);
+#endif
         }
         err = mbc_master_send_request(&setparam, value);
     } else if(cJSON_IsNumber(value_J)){
@@ -193,7 +195,9 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
         {
             int msg_id =0;
             msg_id = esp_mqtt_client_publish(event->client, CONFIG_MQTT_RESPONSE, json_string, strlen(json_string), 0,0);
+#if CONFIG_DEBUG_MODE_ON
             printf("json_string send(%i):\n%s\n",strlen(json_string), json_string);
+#endif
             ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
             cJSON_free(json_string);
         }

@@ -6,6 +6,18 @@ menu "App Configuration"
         help
             URL of the broker to connect to
 
+    choice DEBUG_MODE
+        prompt "debug mode"
+        default DEBUG_MODE_OFF
+        help
+            Selection of debug mode.
+
+        config DEBUG_MODE_ON
+            bool "debug mode"
+
+        config DEBUG_MODE_OFF
+            bool "normal mode"
+    endchoice
     choice MB_COMM_MODE
         prompt "Modbus communication mode"
         default MB_COMM_MODE_TCP if FMB_COMM_MODE_TCP_EN

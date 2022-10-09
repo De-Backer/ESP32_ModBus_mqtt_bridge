@@ -5,6 +5,7 @@ menu "App Configuration"
         default "mqtt://mqtt.eclipseprojects.io"
         help
             URL of the broker to connect to
+            eg.:"mqtt://username:password@server_ip:server_port"
 
     choice DEBUG_MODE
         prompt "debug mode"

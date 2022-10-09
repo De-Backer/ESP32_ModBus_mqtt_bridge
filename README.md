@@ -18,23 +18,22 @@ We use mqtt for the modbus-flex-getter and modbus-flex-write.
 [Node-red code](/Node-red/inport.json)
 
 ## Status of project
-In the test phase.
+In test development phase.
 ## works:
- - [ ] FC 1: Read Coil Status
- - [ ] FC 2: Read Input Status
+ - [ ] FC 1: Read Coil Status (untested)
+ - [ ] FC 2: Read Input Status (untested)
  - [X] FC 3: Read Holding Registers
  - [X] FC 4: Read Input Registers
- - [ ] FC 5: Force Single Coil
+ - [ ] FC 5: Force Single Coil (untested)
  - [X] FC 6: Preset Single Register
- - [ ] FC 15: Force Multiple Coils
+ - [ ] FC 15: Force Multiple Coils (untested)
  - [X] FC 16: Preset Multiple Registers
 
 ## To build
 At Visual Studio Code, SDK Configuration editor of ESP-IDF SDK mod:
 
 App Configuration
-- Broker URL
-- slave ip address
+- Broker URL (eg.:"mqtt://username:password@server_ip:server_port")
 - slave read/write request mqtt
 - slave read/write response mqtt
 - status mqtt
@@ -56,3 +55,4 @@ Modbus RTU/ASCII
 
 Modbus TCP
 - Modbus TCP port number
+- slave ip address

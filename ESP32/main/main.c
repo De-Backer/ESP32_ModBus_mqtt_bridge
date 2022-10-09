@@ -123,7 +123,6 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
      printf("address =%i\r\n", address);/*!< This is the Modbus register address. This is the 0 based value. */
      printf("quantity=%i\r\n", quantity);/*!< Size of mb parameter in registers */
 
-    esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "---handle-", 0,0,0);
     esp_err_t err = ESP_OK;
     mb_param_request_t setparam = {unitid, fc, address, quantity};
      /*
@@ -157,8 +156,6 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
     cJSON_Delete(mqtt_request);
 
     if(err==ESP_OK) {
-        esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "--handle--", 0,0,0);
-
         ESP_LOGI(TAG, "Set to Value =");
 
         cJSON *json_uit = cJSON_CreateObject();
@@ -196,22 +193,25 @@ static void mqtt_to_json(esp_mqtt_event_handle_t event)
         {
             int msg_id =0;
             msg_id = esp_mqtt_client_publish(event->client, CONFIG_MQTT_RESPONSE, json_string, strlen(json_string), 0,0);
-            esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "-handle---", 0,0,0);
             printf("json_string send(%i):\n%s\n",strlen(json_string), json_string);
             ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
             cJSON_free(json_string);
         }
         cJSON_Delete(json_uit);
+        esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "--------ok", 0,0,0);
 
     } else if (err==ESP_ERR_INVALID_ARG) {
         ESP_LOGE(TAG, "invalid Argument");
+        esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "invalid argument", 0,0,0);
     }else if (err==ESP_ERR_INVALID_RESPONSE) {
         ESP_LOGE(TAG, "invalid response");
-    esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "invalid response", 0,0,0);
+        esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "invalid response", 0,0,0);
+    }else if (err==ESP_ERR_TIMEOUT) {
+        ESP_LOGE(TAG, "timeout");
+        esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "timeout", 0,0,0);
     }
 
     free(topic);
-    esp_mqtt_client_publish(event->client, CONFIG_MQTT_STATUS , "handle----", 0,0,0);
 
 }
 

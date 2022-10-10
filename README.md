@@ -1,5 +1,6 @@
 # An ESP32 Modbus Mqtt bridge to node red.
-
+[![platform](https://img.shields.io/badge/platform-Node--RED-red)](https://nodered.org)
+[![platform](https://img.shields.io/badge/platform-ESP--32-blue)](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
 ## Purpose
 To the works like 'modbus-flex-getter' and 'modbus-flex-write' of https://flows.nodered.org/node/node-red-contrib-modbus.
 Which then enables us to read multiple devices over the internet (or local network), without multiple PC's or raspberry pi's.
@@ -14,30 +15,27 @@ We use mqtt for the modbus-flex-getter and modbus-flex-write.
 
 ![Node-red modbus-flex-getter and modbus-flex-write Screenshot](/Node-red/node-red-contrib-modbus.png)
 ![Node-red modbus-flex-getter and modbus-flex-write Screenshot](/Node-red/Screenshot.png)
-[Node-red code](/Node-red/inport.txt)
+[Node-red code](/Node-red/inport.json)
 
 ## Status of project
-In the test phase.
+In test development phase.
 ## works:
- - [ ] FC 1: Read Coil Status
- - [ ] FC 2: Read Input Status
+ - [ ] FC 1: Read Coil Status (untested)
+ - [ ] FC 2: Read Input Status (untested)
  - [X] FC 3: Read Holding Registers
- - [x] FC 4: Read Input Registers
- - [ ] FC 5: Force Single Coil
- - [x] FC 6: Preset Single Register
- - [ ] FC 15: Force Multiple Coils
+ - [X] FC 4: Read Input Registers
+ - [ ] FC 5: Force Single Coil (untested)
+ - [X] FC 6: Preset Single Register
+ - [ ] FC 15: Force Multiple Coils (untested)
  - [X] FC 16: Preset Multiple Registers
 
 ## To build
 At Visual Studio Code, SDK Configuration editor of ESP-IDF SDK mod:
 
 App Configuration
-- Broker URL
-- slave ip address
-- slave read request mqtt
-- slave write request mqtt
-- slave read response mqtt
-- slave write response mqtt
+- Broker URL (eg.:"mqtt://username:password@server_ip:server_port")
+- slave read/write request mqtt
+- slave read/write response mqtt
 - status mqtt
 
 Example Connection Configuration
@@ -57,3 +55,4 @@ Modbus RTU/ASCII
 
 Modbus TCP
 - Modbus TCP port number
+- slave ip address

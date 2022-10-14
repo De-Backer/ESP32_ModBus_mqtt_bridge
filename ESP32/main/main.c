@@ -377,13 +377,6 @@ void app_main(void)
     }
 #endif
 
-
-        ESP_LOGI(TAG,"mbc_master_start");
-    result = mbc_master_start();
-    if(result != ESP_OK){
-        ESP_LOGE(TAG,"mb controller start fail, returns(0x%x).",(uint32_t)result);
-    }
-
 #if CONFIG_MB_COMM_MODE_TCP
 #else
     // Set driver mode to Half Duplex
@@ -399,6 +392,12 @@ void app_main(void)
         ESP_LOGE(TAG,"mb controller set descriptor fail, returns(0x%x).",(uint32_t)result);
     }
     ESP_LOGI(TAG, "Modbus master stack initialized...");
+
+        ESP_LOGI(TAG,"mbc_master_start");
+    result = mbc_master_start();
+    if(result != ESP_OK){
+        ESP_LOGE(TAG,"mb controller start fail, returns(0x%x).",(uint32_t)result);
+    }
 
     vTaskDelay(50);
 

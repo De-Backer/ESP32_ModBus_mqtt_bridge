@@ -44,15 +44,21 @@ Example Connection Configuration
 - WiFi Scan auth mode threshold
 
 Modbus configuration
-- Modbus RTU/ASCII/TCP
+- Modbus RTU or ASCII or TCP
 
-Modbus RTU/ASCII
+If Modbus RTU or ASCII
 - UART port number
 - UART RXD pin number
 - UART TXD pin number
 - UART RTS pin number
 - UART communication speed
 
-Modbus TCP
+Else if Modbus TCP
 - Modbus TCP port number
 - slave ip address
+
+## Note
+Data format out
+- Int16   payload.data and values *see b65c10e ("Fix modbus data integer type", 2022-10-07)
+- Int8    payload.buffer
+- Float32 payload.floatdata
